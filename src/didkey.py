@@ -78,12 +78,18 @@ class SignatureError(ValueError):
 
 def _b58decode(raw: str) -> bytes:
     n = 0
+    zeros = 0
+    for ch in raw:
+        if ch == "1":
+            zeros += 1
+        else:
+            break
     for ch in raw:
         digit = _B58_INDEX.get(ch)
         if digit is None:
             raise DidError(f"bad did:key: {ch!r} is not base58btc")
         n = n * 58 + digit
-    return n.to_bytes((n.bit_length() + 7) // 8, "big") if n else b""
+    return n.to_bytes((n.bit_length() + 7) // 8 + zeros, "big") if n else b"\x00" * zeros
 
 
 def public_key(did: str) -> bytes:
